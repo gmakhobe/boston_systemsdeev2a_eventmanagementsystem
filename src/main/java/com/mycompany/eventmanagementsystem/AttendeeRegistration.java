@@ -4,6 +4,10 @@
  */
 package com.mycompany.eventmanagementsystem;
 
+import java.util.Vector;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author bbdnet2332
@@ -13,8 +17,96 @@ public class AttendeeRegistration extends javax.swing.JFrame {
     /**
      * Creates new form AttendeeRegistration
      */
+    
+    DefaultTableModel eventSelectionJTable;
+    DefaultTableModel attendeeRegistrationJTable;
+    int eventId;
+    
     public AttendeeRegistration() {
         initComponents();
+        
+        this.eventId = 0;
+        
+        eventSelectionJTable = (DefaultTableModel) tableEventSelection.getModel();
+        attendeeRegistrationJTable = (DefaultTableModel) tableAttendeeRegistration.getModel();
+        
+        writeDatabaseInfoToEventSelectionTable(true);
+        writeDatabaseInfoToAttendeeRegistrationTable(true);
+        TableEventManagerForEvents();
+    }
+    
+    public void TableEventManagerForEvents(){
+        tableEventSelection.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int selectedRow = tableEventSelection.getSelectedRow();
+
+                if (selectedRow != -1) {
+
+                    // Get values from the selected row
+                    int columnCount = this.eventSelectionJTable.getColumnCount();
+                    Vector rowData = new Vector();
+                    for (int i = 0; i < columnCount; i++) {
+                        rowData.add(this.eventSelectionJTable.getValueAt(selectedRow, i));
+                    }
+
+                    this.eventId = Integer.parseInt((String) rowData.get(0));
+                   
+                }
+            }
+        });
+    }
+    
+    public void writeDatabaseInfoToEventSelectionTable(boolean initial){
+        Database db = new Database();
+        Vector information = db.selectAllDataFromATable("events");
+        Vector data = (Vector<Vector>) information.get(0);
+        Vector columns = (Vector<String>) information.get(1);
+        int tableRows = this.eventSelectionJTable.getRowCount();
+        
+        for (int i = tableRows - 1; i >= 0; i--){
+                this.eventSelectionJTable.removeRow(i);
+        }
+        
+        
+        if (initial) {
+            for (var columnName : columns){
+                this.eventSelectionJTable.addColumn(columnName);
+            }
+        }
+        
+        int rowsSize = data.size();
+   
+        for (int i = 0; i < rowsSize; i++) {
+            this.eventSelectionJTable.addRow((Vector<?>) data.get(i));
+        }
+        
+    }
+    
+    public void writeDatabaseInfoToAttendeeRegistrationTable(boolean initial){
+        Database db = new Database();
+        Vector information = db.selectAllDataFromATableCustom("SELECT ar.*, e.event_name" +
+                                                              " FROM attendee_registration ar" +
+                                                              " INNER JOIN events e ON ar.event_id = e.event_id;");
+        Vector data = (Vector<Vector>) information.get(0);
+        Vector columns = (Vector<String>) information.get(1);
+        int tableRows = this.attendeeRegistrationJTable.getRowCount();
+        
+        for (int i = tableRows - 1; i >= 0; i--){
+                this.attendeeRegistrationJTable.removeRow(i);
+        }
+        
+        if (initial) {
+            for (var columnName : columns){
+                this.attendeeRegistrationJTable.addColumn(columnName);
+            }
+        }
+        
+        int rowsSize = data.size();
+   
+        for (int i = 0; i < rowsSize; i++) {
+            this.attendeeRegistrationJTable.addRow((Vector<?>) data.get(i));
+        }
+        
     }
 
     /**
@@ -26,19 +118,20 @@ public class AttendeeRegistration extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jTextField4 = new javax.swing.JTextField();
+        textfieldEmail = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tableEventSelection = new javax.swing.JTable();
         jLabel4 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
-        jLabel5 = new javax.swing.JLabel();
         buttonBack = new javax.swing.JButton();
-        jTextField1 = new javax.swing.JTextField();
-        jTextField2 = new javax.swing.JTextField();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        textfieldAttendeeRegistration = new javax.swing.JTextField();
+        textfieldContactNumber = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tableAttendeeRegistration = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -48,18 +141,15 @@ public class AttendeeRegistration extends javax.swing.JFrame {
 
         jLabel3.setText("Email");
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tableEventSelection.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(tableEventSelection);
 
         jLabel4.setText("Contact Number");
 
@@ -70,8 +160,6 @@ public class AttendeeRegistration extends javax.swing.JFrame {
             }
         });
 
-        jLabel5.setText("Event");
-
         buttonBack.setText("Back");
         buttonBack.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -79,19 +167,29 @@ public class AttendeeRegistration extends javax.swing.JFrame {
             }
         });
 
-        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+        textfieldAttendeeRegistration.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField1ActionPerformed(evt);
+                textfieldAttendeeRegistrationActionPerformed(evt);
             }
         });
 
-        jTextField2.addActionListener(new java.awt.event.ActionListener() {
+        textfieldContactNumber.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField2ActionPerformed(evt);
+                textfieldContactNumberActionPerformed(evt);
             }
         });
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jLabel6.setText("Select Event Below by clicking the desired row");
+
+        tableAttendeeRegistration.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+
+            }
+        ));
+        jScrollPane2.setViewportView(tableAttendeeRegistration);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -103,37 +201,36 @@ public class AttendeeRegistration extends javax.swing.JFrame {
                 .addGap(406, 406, 406))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addGap(133, 133, 133)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel4)
-                            .addComponent(jLabel2))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(71, 71, 71)
-                                .addComponent(jLabel3))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jLabel5)))
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(18, 18, 18)
-                                .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGap(26, 26, 26)
-                                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                            .addGap(133, 133, 133)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel4)
+                                .addComponent(jLabel2))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addComponent(textfieldAttendeeRegistration, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGap(71, 71, 71)
+                                            .addComponent(jLabel3))
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addGap(50, 50, 50)
+                                            .addComponent(jLabel6)))
+                                    .addGap(18, 18, 18)
+                                    .addComponent(textfieldEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(textfieldContactNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(layout.createSequentialGroup()
+                            .addContainerGap()
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 667, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(buttonBack, javax.swing.GroupLayout.PREFERRED_SIZE, 263, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 667, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(120, Short.MAX_VALUE))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 667, Short.MAX_VALUE)
+                            .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(buttonBack, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .addContainerGap(129, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -144,22 +241,23 @@ public class AttendeeRegistration extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(jLabel3)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(textfieldAttendeeRegistration, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(textfieldEmail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel4)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel5)
-                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(64, 64, 64)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(48, 48, 48)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(buttonBack))
-                .addContainerGap(52, Short.MAX_VALUE))
+                    .addComponent(jLabel4)
+                    .addComponent(textfieldContactNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(21, 21, 21)
+                .addComponent(jLabel6)
+                .addGap(14, 14, 14)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(30, 30, 30)
+                .addComponent(jButton1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(27, 27, 27)
+                .addComponent(buttonBack)
+                .addGap(92, 92, 92))
         );
 
         pack();
@@ -172,16 +270,50 @@ public class AttendeeRegistration extends javax.swing.JFrame {
         this.hide();
     }//GEN-LAST:event_buttonBackActionPerformed
 
-    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
+    private void textfieldAttendeeRegistrationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textfieldAttendeeRegistrationActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField1ActionPerformed
+    }//GEN-LAST:event_textfieldAttendeeRegistrationActionPerformed
 
-    private void jTextField2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField2ActionPerformed
+    private void textfieldContactNumberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textfieldContactNumberActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField2ActionPerformed
+    }//GEN-LAST:event_textfieldContactNumberActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
+        if (this.eventId < 1) {
+            JOptionPane.showMessageDialog(null, "Please select event the attendee is signing up for.");
+            return ;
+        }
+        
+        String attendeeName = textfieldAttendeeRegistration.getText();
+        String attendeeEmail = textfieldEmail.getText();
+        String attendeeContact = textfieldContactNumber.getText();
+        
+        InputValidation inputVal = new InputValidation();
+        
+        if (inputVal.isFieldEmpty(attendeeName, "Attendee Name") == true) {
+            return ;
+        }
+        if (inputVal.isFieldEmpty(attendeeEmail, "Attendee Email") == true) {
+            return ;
+        }
+        if (inputVal.isFieldEmpty(attendeeContact, "Attendee Contact") == true) {
+            return ;
+        }
+        
+        Database db = new Database();
+        String sqlStatement = "INSERT INTO attendee_registration (attendee_name, email, contact_number, event_id)" +
+                    "VALUES ('"+ attendeeName +"', '"+ attendeeEmail +"', '"+ attendeeContact +"', "+ this.eventId +");";
+        if (db.insertDataIntoATable(sqlStatement)){
+            JOptionPane.showMessageDialog(null, "Information Captured successfully.");
+        }else{
+            JOptionPane.showMessageDialog(null, "Information Failed Captured.");
+        }
+        
+        textfieldAttendeeRegistration.setText("");
+        textfieldEmail.setText("");
+        textfieldContactNumber.setText("");
+        writeDatabaseInfoToEventSelectionTable(false);
+        writeDatabaseInfoToAttendeeRegistrationTable(false);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
@@ -222,16 +354,17 @@ public class AttendeeRegistration extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonBack;
     private javax.swing.JButton jButton1;
-    private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField4;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTable tableAttendeeRegistration;
+    private javax.swing.JTable tableEventSelection;
+    private javax.swing.JTextField textfieldAttendeeRegistration;
+    private javax.swing.JTextField textfieldContactNumber;
+    private javax.swing.JTextField textfieldEmail;
     // End of variables declaration//GEN-END:variables
 }

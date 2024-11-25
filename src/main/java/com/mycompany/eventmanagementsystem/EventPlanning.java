@@ -4,6 +4,10 @@
  */
 package com.mycompany.eventmanagementsystem;
 
+import java.util.Vector;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author bbdnet2332
@@ -13,8 +17,69 @@ public class EventPlanning extends javax.swing.JFrame {
     /**
      * Creates new form EventPlanning
      */
+    DefaultTableModel eventManagementJTable;
+    private int eventId;
+    
     public EventPlanning() {
         initComponents();
+        
+        eventManagementJTable = (DefaultTableModel) tableEventPlanning.getModel();
+        this.eventId = 0;
+        writeDatabaseInfoToTable(true);
+        TableEventManager();
+        
+    }
+    
+    public void TableEventManager(){
+        tableEventPlanning.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int selectedRow = tableEventPlanning.getSelectedRow();
+
+                if (selectedRow != -1) {
+
+                    // Get values from the selected row
+                    int columnCount = this.eventManagementJTable.getColumnCount();
+                    Vector rowData = new Vector();
+                    for (int i = 0; i < columnCount; i++) {
+                        rowData.add(this.eventManagementJTable.getValueAt(selectedRow, i));
+                    }
+
+                    this.eventId = Integer.parseInt((String) rowData.get(0));
+                    
+                    textfieldEventName.setText((String)rowData.get(1));
+                    textfieldEventDate.setText((String) rowData.get(2));
+                    textfieldEventTime.setText((String) rowData.get(3));
+                    textfieldEventDescription.setText((String) rowData.get(4));
+                    textfieldOrganisersInformation.setText((String) rowData.get(5));
+                }
+            }
+        });
+    }
+    
+    public void writeDatabaseInfoToTable(boolean initial){
+        Database db = new Database();
+        Vector information = db.selectAllDataFromATable("events");
+        Vector data = (Vector<Vector>) information.get(0);
+        Vector columns = (Vector<String>) information.get(1);
+        int tableRows = this.eventManagementJTable.getRowCount();
+        
+        for (int i = tableRows - 1; i >= 0; i--){
+                this.eventManagementJTable.removeRow(i);
+        }
+        
+        
+        if (initial) {
+            for (var columnName : columns){
+                this.eventManagementJTable.addColumn(columnName);
+            }
+        }
+        
+        int rowsSize = data.size();
+   
+        for (int i = 0; i < rowsSize; i++) {
+            this.eventManagementJTable.addRow((Vector<?>) data.get(i));
+        }
+        
     }
 
     /**
@@ -32,17 +97,17 @@ public class EventPlanning extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jTextField2 = new javax.swing.JTextField();
-        jTextField3 = new javax.swing.JTextField();
-        jTextField4 = new javax.swing.JTextField();
-        jTextField5 = new javax.swing.JTextField();
+        textfieldEventName = new javax.swing.JTextField();
+        textfieldEventTime = new javax.swing.JTextField();
+        textfieldOrganisersInformation = new javax.swing.JTextField();
+        textfieldEventDate = new javax.swing.JTextField();
+        textfieldEventDescription = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
-        jButton1 = new javax.swing.JButton();
+        tableEventPlanning = new javax.swing.JTable();
+        buttonAddEvent = new javax.swing.JButton();
         buttonBack = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
+        buttonEventEdit = new javax.swing.JButton();
+        buttonEventDelete = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -58,32 +123,34 @@ public class EventPlanning extends javax.swing.JFrame {
 
         jLabel6.setText("Organiser Information");
 
-        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+        textfieldEventName.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField1ActionPerformed(evt);
+                textfieldEventNameActionPerformed(evt);
             }
         });
 
-        jTextField2.addActionListener(new java.awt.event.ActionListener() {
+        textfieldEventTime.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField2ActionPerformed(evt);
+                textfieldEventTimeActionPerformed(evt);
             }
         });
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tableEventPlanning.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(tableEventPlanning);
 
-        jButton1.setText("Insert");
+        buttonAddEvent.setText("Insert");
+        buttonAddEvent.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonAddEventActionPerformed(evt);
+            }
+        });
 
         buttonBack.setText("Back");
         buttonBack.addActionListener(new java.awt.event.ActionListener() {
@@ -92,9 +159,19 @@ public class EventPlanning extends javax.swing.JFrame {
             }
         });
 
-        jButton3.setText("Edit");
+        buttonEventEdit.setText("Edit");
+        buttonEventEdit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonEventEditActionPerformed(evt);
+            }
+        });
 
-        jButton4.setText("Delete");
+        buttonEventDelete.setText("Delete");
+        buttonEventDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonEventDeleteActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -116,29 +193,27 @@ public class EventPlanning extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                        .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(69, 69, 69))
-                                    .addComponent(jTextField1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(textfieldOrganisersInformation, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(textfieldEventName, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(69, 69, 69)
                                 .addComponent(jLabel3))
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(textfieldEventTime, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jLabel5)))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jTextField4)
-                            .addComponent(jTextField5, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)))
+                            .addComponent(textfieldEventDate)
+                            .addComponent(textfieldEventDescription, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jButton1)
+                                .addComponent(buttonAddEvent)
                                 .addGap(105, 105, 105)
-                                .addComponent(jButton3)
+                                .addComponent(buttonEventEdit)
                                 .addGap(130, 130, 130)
-                                .addComponent(jButton4)
+                                .addComponent(buttonEventDelete)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(buttonBack))
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 667, javax.swing.GroupLayout.PREFERRED_SIZE))))
@@ -153,40 +228,40 @@ public class EventPlanning extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(jLabel3)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(textfieldEventName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(textfieldEventDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel4)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(textfieldEventTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel5)
-                        .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(textfieldEventDescription, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(11, 11, 11)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(textfieldOrganisersInformation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(31, 31, 31)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(48, 48, 48)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
+                    .addComponent(buttonAddEvent)
                     .addComponent(buttonBack)
-                    .addComponent(jButton3)
-                    .addComponent(jButton4))
+                    .addComponent(buttonEventEdit)
+                    .addComponent(buttonEventDelete))
                 .addContainerGap(134, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
+    private void textfieldEventNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textfieldEventNameActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField1ActionPerformed
+    }//GEN-LAST:event_textfieldEventNameActionPerformed
 
-    private void jTextField2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField2ActionPerformed
+    private void textfieldEventTimeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textfieldEventTimeActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField2ActionPerformed
+    }//GEN-LAST:event_textfieldEventTimeActionPerformed
 
     private void buttonBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonBackActionPerformed
         HomeScreen homeScreen = new HomeScreen();
@@ -194,6 +269,140 @@ public class EventPlanning extends javax.swing.JFrame {
         
         this.hide();
     }//GEN-LAST:event_buttonBackActionPerformed
+
+    private void buttonAddEventActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddEventActionPerformed
+        String eventName = textfieldEventName.getText();
+        String eventDate = textfieldEventDate.getText();
+        String eventTime = textfieldEventTime.getText();
+        String eventDescription = textfieldEventDescription.getText();
+        String organisersInformation = textfieldOrganisersInformation.getText();
+        InputValidation inputVal = new InputValidation();
+        
+        if (inputVal.isFieldEmpty(eventName, "Event Name") == true) {
+            return ;
+        }
+        if (inputVal.isFieldEmpty(eventDate, "Event Date") == true) {
+            return ;
+        }
+        if (inputVal.isFieldEmpty(eventTime, "Event Time") == true) {
+            return ;
+        }
+        if (inputVal.isFieldEmpty(eventDescription, "Event Description") == true) {
+            return ;
+        }
+        if (inputVal.isFieldEmpty(organisersInformation, "Organisers Information") == true) {
+            return ;
+        }
+        
+        Database db = new Database();
+        String sqlStatement = "INSERT INTO events (event_name, date, time, description, organiser_details)" +
+                    "VALUES ('"+ eventName +"', '"+ eventDate +"', '" + eventTime +"', '" + eventDescription +"', '" + organisersInformation +"');";
+        if (db.insertDataIntoATable(sqlStatement)){
+            JOptionPane.showMessageDialog(null, "Information Captured successfully.");
+        }else{
+            JOptionPane.showMessageDialog(null, "Information Failed Captured.");
+        }
+        
+        textfieldEventName.setText("");
+        textfieldEventDate.setText("");
+        textfieldEventTime.setText("");
+        textfieldEventDescription.setText("");
+        textfieldOrganisersInformation.setText("");
+        writeDatabaseInfoToTable(false);
+    }//GEN-LAST:event_buttonAddEventActionPerformed
+
+    private void buttonEventEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonEventEditActionPerformed
+        String eventName = textfieldEventName.getText();
+        String eventDate = textfieldEventDate.getText();
+        String eventTime = textfieldEventTime.getText();
+        String eventDescription = textfieldEventDescription.getText();
+        String organisersInformation = textfieldOrganisersInformation.getText();
+        InputValidation inputVal = new InputValidation();
+        
+        if (inputVal.isFieldEmpty(eventName, "Event Name") == true) {
+            return ;
+        }
+        if (inputVal.isFieldEmpty(eventDate, "Event Date") == true) {
+            return ;
+        }
+        if (inputVal.isFieldEmpty(eventTime, "Event Time") == true) {
+            return ;
+        }
+        if (inputVal.isFieldEmpty(eventDescription, "Event Description") == true) {
+            return ;
+        }
+        if (inputVal.isFieldEmpty(organisersInformation, "Organisers Information") == true) {
+            return ;
+        }
+        
+        Database db = new Database();
+        String sqlStatement =   "UPDATE events " +
+                                "SET event_name = '"+eventName+"'," +
+                                " date = '"+eventDate+"'," +
+                                " time = '"+eventTime+"'," +
+                                " description = '"+eventDescription+"'," +
+                                " organiser_details = '"+organisersInformation+"' " +
+                                " WHERE event_id = "+ this.eventId +";";
+        if (db.insertDataIntoATable(sqlStatement)){
+            JOptionPane.showMessageDialog(null, "Information Updated successfully.");
+        }else{
+            JOptionPane.showMessageDialog(null, "Information Failed To Update.");
+        }
+        
+        writeDatabaseInfoToTable(false);
+        textfieldEventName.setText("");
+        textfieldEventDate.setText("");
+        textfieldEventTime.setText("");
+        textfieldEventDescription.setText("");
+        textfieldOrganisersInformation.setText("");
+        this.eventId = 0;
+    }//GEN-LAST:event_buttonEventEditActionPerformed
+
+    private void buttonEventDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonEventDeleteActionPerformed
+        if (this.eventId < 1) {
+            JOptionPane.showMessageDialog(null, "Please select row first to delete from the table.");
+            return ;
+        }
+        
+        String eventName = textfieldEventName.getText();
+        String eventDate = textfieldEventDate.getText();
+        String eventTime = textfieldEventTime.getText();
+        String eventDescription = textfieldEventDescription.getText();
+        String organisersInformation = textfieldOrganisersInformation.getText();
+        InputValidation inputVal = new InputValidation();
+        
+        if (inputVal.isFieldEmpty(eventName, "Event Name") == true) {
+            return ;
+        }
+        if (inputVal.isFieldEmpty(eventDate, "Event Date") == true) {
+            return ;
+        }
+        if (inputVal.isFieldEmpty(eventTime, "Event Time") == true) {
+            return ;
+        }
+        if (inputVal.isFieldEmpty(eventDescription, "Event Description") == true) {
+            return ;
+        }
+        if (inputVal.isFieldEmpty(organisersInformation, "Organisers Information") == true) {
+            return ;
+        }
+        
+        Database db = new Database();
+        String sqlStatement =   "DELETE FROM events WHERE event_id = "+ this.eventId +";";
+        if (db.insertDataIntoATable(sqlStatement)){
+            JOptionPane.showMessageDialog(null, "Information Deleted successfully.");
+        }else{
+            JOptionPane.showMessageDialog(null, "Information Failed To Delete.");
+        }
+        
+        writeDatabaseInfoToTable(false);
+        textfieldEventName.setText("");
+        textfieldEventDate.setText("");
+        textfieldEventTime.setText("");
+        textfieldEventDescription.setText("");
+        textfieldOrganisersInformation.setText("");
+        this.eventId = 0;
+    }//GEN-LAST:event_buttonEventDeleteActionPerformed
 
     /**
      * @param args the command line arguments
@@ -231,10 +440,10 @@ public class EventPlanning extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton buttonAddEvent;
     private javax.swing.JButton buttonBack;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
+    private javax.swing.JButton buttonEventDelete;
+    private javax.swing.JButton buttonEventEdit;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -242,11 +451,11 @@ public class EventPlanning extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
-    private javax.swing.JTextField jTextField4;
-    private javax.swing.JTextField jTextField5;
+    private javax.swing.JTable tableEventPlanning;
+    private javax.swing.JTextField textfieldEventDate;
+    private javax.swing.JTextField textfieldEventDescription;
+    private javax.swing.JTextField textfieldEventName;
+    private javax.swing.JTextField textfieldEventTime;
+    private javax.swing.JTextField textfieldOrganisersInformation;
     // End of variables declaration//GEN-END:variables
 }
